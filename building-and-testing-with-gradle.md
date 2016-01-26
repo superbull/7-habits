@@ -37,3 +37,37 @@
     include '**/*.xml', '**/*.txt', '**/*.properties'
   }
   ```
+
+- We can create custom task types by extending existing one. For example:
+  ```groovy
+  class MySqlTask extends DefaultTask {
+    def hostname = 'localhost'
+    def port = 3306
+    def sql
+    def database
+    def username = 'root'
+    def password = 'password'
+    
+    @TaskAction
+    def runQuery() {
+      def cmd
+      if(database) {
+        cmd = "mysql -u ${username} -p ${password} -h ${hostname}
+          -P ${port} ${database} -e "
+      }
+      else {
+        cmd = "mysql -u ${username} -p ${password} -h ${hostname} -P ${port} -e "
+      }
+      project.exec {
+        commandLine = cmd.split().toList() + sql
+      }
+    }
+  }
+  ```
+  
+  We have 4 options for where to put this custom task code:
+  
+  1. in the build script itself
+  2. `buildSrc` directory, the same level as build.gradle
+  3. a separate build script file imported into the main build script
+  4. in a custom plug-in written in Java or Groovy
